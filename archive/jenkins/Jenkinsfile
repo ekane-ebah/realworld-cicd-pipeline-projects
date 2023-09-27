@@ -11,8 +11,9 @@ pipeline {
     //NEXUS_URL = "172.31.18.62:8081"
     //NEXUS_REPOSITORY = "maven_project"
     //NEXUS_REPO_ID    = "maven_project"
-    NEXUS_CREDENTIAL_ID = 'Nexus-Credential'
-    ARTVERSION = "${env.BUILD_ID}"
+    NEXUS_CREDENTIAL_ID = 'Nexus-Credentials'
+    SONAR_TOKEN ="SonarGube-Token"
+    // ARTVERSION = "${env.BUILD_ID}"
   }
   tools {
     maven 'localMaven'
@@ -53,11 +54,11 @@ pipeline {
     stage('SonarQube Inspection') {
         steps {
             withSonarQubeEnv('SonarQube') { 
-                withCredentials([string(credentialsId: 'SonarQube-Token', variable: 'SONAR_TOKEN')]) {
+                withCredentials([string(credentialsId: 'SonarGube-Token', variable: 'SONAR_TOKEN')]) {
                 sh """
                 mvn sonar:sonar \
                 -Dsonar.projectKey=jjtech-cicd-pipeline \
-                -Dsonar.host.url=http://172.31.83.105:9000 \
+                -Dsonar.host.url=http://172.31.49.93:9000 \
                 -Dsonar.login=$SONAR_TOKEN
                 """
                 }
@@ -130,7 +131,7 @@ pipeline {
   post {
     always {
         echo 'Slack Notifications.'
-        slackSend channel: '#cicd-project-alerts', //update and provide your channel name
+        slackSend channel: '#cicd-pipeline-project-cee-1', //update and provide your channel name
         color: COLOR_MAP[currentBuild.currentResult],
         message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
         //${env.BUILD_ID}-${env.BUILD_TIMESTAMP}
